@@ -8,20 +8,12 @@ describe('Testes da Funcionalidade Usuários', () => {
 
 
      it('Deve cadastrar um usuário com sucesso', () => {
-          cy.request({
-               method: 'POST',
-               url: 'usuarios',
-               body: {
-                    "nome": `Ariel da Silva 3 ${Date.now()}`,
-                    "email": email,
-                    "password": "teste",
-                    "administrador": "true"
-               }
-          }).then((response) => {
-               id = response.body._id
-               expect(response.status).to.equal(201)
-               expect(response.body.message).to.equal('Cadastro realizado com sucesso')
-          })
+          cy.cadastrarUsuario(`Ariel da Silva 3 ${Date.now()}`, email, 'teste', 'true')
+               .then((response) => {
+                    id = response.body._id
+                    expect(response.status).to.equal(201)
+                    expect(response.body.message).to.equal('Cadastro realizado com sucesso')
+               })
      });
 
      it('Deve tentar cadastrar usuário com e-mail já cadastrado - cenário negativo', () => {
@@ -81,34 +73,25 @@ describe('Testes da Funcionalidade Usuários', () => {
 
      it('Deve editar um usuário previamente cadastrado - cenário negativo', () => {
           const novoEmail = `email_${Date.now()}@email.com`
-          cy.request({
-               method: 'POST',
-               url: 'usuarios',
-               body: {
-                    "nome": `Ariel da Silva 3 ${Date.now()}`,
-                    "email": novoEmail,
-                    "password": "teste",
-                    "administrador": "true"
-               }
-          }).then((response) => {
-               expect(response.status).to.equal(201)
-
-               cy.request({
-                    method: 'PUT',
-                    url: `usuarios/${id}`,
-                    body: {
-                         "nome": `José da Silva ${Date.now()}`,
-                         "email": novoEmail,
-                         "password": "teste",
-                         "administrador": "true"
-                    },
-                    failOnStatusCode: false
-               }).then((response) => {
-                    expect(response.status).to.equal(400)
-                    expect(response.body.message).to.equal('Este email já está sendo usado')
+          cy.cadastrarUsuario(`Ariel da Silva 3 ${Date.now()}`, novoEmail, 'teste', 'true')
+               .then((response) => {
+                    expect(response.status).to.equal(201)
+                    cy.request({
+                         method: 'PUT',
+                         url: `usuarios/${id}`,
+                         body: {
+                              "nome": `José da Silva ${Date.now()}`,
+                              "email": novoEmail,
+                              "password": "teste",
+                              "administrador": "true"
+                         },
+                         failOnStatusCode: false
+                    }).then((response) => {
+                         expect(response.status).to.equal(400)
+                         expect(response.body.message).to.equal('Este email já está sendo usado')
+                    })
                })
-          })
-          
+
      });
 
      it('Deve deletar um usuário previamente cadastrado', () => {
@@ -127,6 +110,4 @@ describe('Testes da Funcionalidade Usuários', () => {
                return contrato.validateAsync(response.body)
           })
      });
-
-
-});
+})
